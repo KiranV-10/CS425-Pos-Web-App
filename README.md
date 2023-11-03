@@ -5,6 +5,8 @@ The database ERD is designed as such:
 
 ![Capture](https://github.com/MeganYTan/CS425-Pos-Web-App/assets/22186227/3b494977-c203-4d98-a7e8-05f0d55af10a)
 
+The database is implemented in MySQL, and the process for creating it is detailed in this [document](https://docs.google.com/document/d/1tLjxkQ88COiYGmfYtHXzkRQGGcegsuj0LORLRAHLDZ0/edit).
+
 This application contains all the CRUD operations for all the tables listed. Note that since Payment and Order_Product are dependent on Orders, they are updated by updating the Orders table.
 
 To run the application: 
