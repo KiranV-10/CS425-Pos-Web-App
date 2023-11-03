@@ -47,9 +47,9 @@ def add():
     try:
         insert_columns = ['date_time', 'employee_id']
         insert_values = [data['date_time'], data['employee_id']]
-        if "order_id" in data:
-            insert_columns.append('order_id')
-            insert_values.append(data['order_id'])
+        if "customer_id" in data:
+            insert_columns.append('customer_id')
+            insert_values.append(data['customer_id'])
         if "discount_id" in data:
             insert_columns.append('discount_id')
             insert_values.append(data['discount_id'])
@@ -69,7 +69,7 @@ def add():
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Adding order', 'success': False}), 500
+        return jsonify({'message': 'Error Adding order: ' + str(e), 'success': False}), 500
     finally:
         cursor.close()
         connection.close()
@@ -85,8 +85,9 @@ def edit(order_id):
     cursor = connection.cursor(prepared=True)
     try:
         # orders
-        sql = "UPDATE orders SET date_time = %s, employee_id=%s, order_id=%s, discount_id=%s WHERE order_id=%s"
-        cursor.execute(sql, (data['date_time'], data['employee_id'], data['order_id'], data['discount_id'], order_id))
+        sql = ("UPDATE orders SET date_time = %s, employee_id=%s, order_id=%s, discount_id=%s, customer_id=%s WHERE "
+               "order_id=%s")
+        cursor.execute(sql, (data['date_time'], data['employee_id'], data['order_id'], data['discount_id'], data['customer_id'], order_id))
         # payment
         payment_sql = "UPDATE payment SET payment_method = %s, payment_amount=%s WHERE order_id=%s"
         cursor.execute(payment_sql,
@@ -102,7 +103,7 @@ def edit(order_id):
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Updating order', 'success': False}), 500
+        return jsonify({'message': 'Error Updating order: ' + str(e), 'success': False}), 500
     finally:
         connection.close()
     return get_order_by_id(order_id)
@@ -123,7 +124,7 @@ def delete(id):
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Deleting order', 'success': False}), 500
+        return jsonify({'message': 'Error Deleting order: ' + str(e), 'success': False}), 500
     finally:
         cursor.close()
         connection.close()

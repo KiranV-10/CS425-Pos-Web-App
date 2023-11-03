@@ -51,7 +51,7 @@ def add():
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Adding Discount', 'success': False}), 500
+        return jsonify({'message': 'Error Adding Discount: ' + str(e), 'success': False}), 500
     finally:
         cursor.close()
         connection.close()
@@ -72,7 +72,7 @@ def edit(discount_id):
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Updating Discount', 'success': False}), 500
+        return jsonify({'message': 'Error Updating Discount: ' + str(e), 'success': False}), 500
     finally:
         cursor.close()
         connection.close()

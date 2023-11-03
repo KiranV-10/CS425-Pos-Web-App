@@ -52,7 +52,7 @@ def add():
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Adding product', 'success': False}), 500
+        return jsonify({'message': 'Error Adding product: ' + str(e), 'success': False}), 500
     finally:
         cursor.close()
         connection.close()
@@ -73,7 +73,7 @@ def edit(product_id):
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Updating product', 'success': False}), 500
+        return jsonify({'message': 'Error Updating product: ' + str(e), 'success': False}), 500
     finally:
         connection.close()
 
@@ -93,7 +93,7 @@ def delete(id):
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Deleting product', 'success': False}), 500
+        return jsonify({'message': 'Error Deleting product: ' + str(e), 'success': False}), 500
     finally:
         cursor.close()
         connection.close()

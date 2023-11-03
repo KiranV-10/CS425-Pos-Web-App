@@ -66,7 +66,7 @@ def add():
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Adding Employee', 'success': False}), 500
+        return jsonify({'message': 'Error Adding Employee: ' + str(e), 'success': False}), 500
     finally:
         cursor.close()
         connection.close()
@@ -98,7 +98,7 @@ def edit(employee_id):
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Updating Employee', 'success': False}), 500
+        return jsonify({'message': 'Error Updating Employee: ' + str(e), 'success': False}), 500
     finally:
         cursor.close()
         connection.close()
@@ -113,14 +113,14 @@ def delete(id):
     try:
         cursor.execute("DELETE FROM EMPLOYEE WHERE EMPLOYEE_ID = %s", (id,))
         if cursor.rowcount == 0:
-            return jsonify({'message': 'EMPLOYEE not found!'}), 404
+            return jsonify({'message': 'Employee not found!'}), 404
         connection.commit()
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
-        return jsonify({'message': 'Error Deleting EMPLOYEE', 'success': False}), 500
+        return jsonify({'message': 'Error Deleting employee: ' + str(e), 'success': False}), 500
     finally:
         cursor.close()
         connection.close()
-    return jsonify({'message': 'EMPLOYEE deleted successfully!'}), 200
+    return jsonify({'message': 'Employee deleted successfully!'}), 200
 
