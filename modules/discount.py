@@ -3,11 +3,12 @@ from mysql.connector import Error as MySQL_Error
 from helper import get_serializable_data, get_serializable_item
 from db import mydb
 import logging
-# error here
+
 logger = logging.getLogger(__name__)
 discount_bp = Blueprint('discount', __name__)
 
 
+# get all discounts
 @discount_bp.route('/', methods=['GET'])
 def get_all_discounts():
     connection = mydb()
@@ -18,6 +19,7 @@ def get_all_discounts():
     return jsonify(result), 200
 
 
+# get discount by id. Parameter: id: id of the discount to get
 @discount_bp.route('/<int:id>', methods=['GET'])
 def get_discount_by_id(id):
     connection = mydb()
@@ -34,14 +36,15 @@ def get_discount_by_id(id):
     return jsonify(discount), 200
 
 
+# add a discount to the database. Parameter in post body is the discount object
 @discount_bp.route('/add', methods=['POST'])
 def add():
     data = request.json
-    logger.debug(data)
     connection = mydb()
     try:
         with connection.cursor() as cursor:
-            sql = "INSERT INTO `discount` (`discount_description`, `discount_amount`, `coupon_code`) VALUES (%s, %s, %s)"
+            sql = ("INSERT INTO `discount` (`discount_description`, `discount_amount`, `coupon_code`) VALUES (%s, %s, "
+                   "%s)")
             cursor.execute(sql, (data['discount_description'], data['discount_amount'], data['coupon_code']))
             discount_id = cursor.lastrowid
         connection.commit()
@@ -50,11 +53,13 @@ def add():
         logger.error(f"MySQL Error: {e}")
         return jsonify({'message': 'Error Adding Discount', 'success': False}), 500
     finally:
+        cursor.close()
         connection.close()
+    return jsonify({'message': 'Discount added successfully!', 'discount_id': discount_id, 'success': True}), 201
 
-    return jsonify({'message': 'Discount added successfully!', 'discount_id': discount_id}), 201
 
-
+# edit discount. Parameter: discount_id: the id of the discount to edit. The discount details are in the body of
+# the post request
 @discount_bp.route('/edit/<int:discount_id>', methods=['POST'])
 def edit(discount_id):
     data = request.json
@@ -62,22 +67,19 @@ def edit(discount_id):
     cursor = connection.cursor(prepared=True)
     try:
         sql = "UPDATE DISCOUNT SET discount_amount = %s, discount_description=%s, coupon_code=%s WHERE discount_id =%s"
-        cursor.execute(sql, (
-        data['discount_amount'], data['discount_description'], data['coupon_code'], discount_id))
-        logger.debug(cursor._executed)
-        # if cursor.rowcount == 0:
-        #     return jsonify({'message': 'Discount not found!'}), 404
+        cursor.execute(sql, (data['discount_amount'], data['discount_description'], data['coupon_code'], discount_id))
         connection.commit()
     except MySQL_Error as e:
         connection.rollback()
         logger.error(f"MySQL Error: {e}")
         return jsonify({'message': 'Error Updating Discount', 'success': False}), 500
     finally:
+        cursor.close()
         connection.close()
-
     return jsonify({'message': 'Discount updated successfully!', 'success': True}), 200
 
 
+# delete discount. Parameter: id: the id of the discount to delete
 @discount_bp.route('/delete/<int:id>', methods=['DELETE'])
 def delete(id):
     connection = mydb()
@@ -92,7 +94,7 @@ def delete(id):
         logger.error(f"MySQL Error: {e}")
         return jsonify({'message': 'Error Deleting Discount:' + str(e), 'success': False}), 500
     finally:
-        # cursor.close()
+        cursor.close()
         connection.close()
 
-    return jsonify({'message': 'Discount deleted successfully!'}), 200
+    return jsonify({'message': 'Discount deleted successfully!', 'success': True}), 200
