@@ -7,6 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 customer_bp = Blueprint('customer', __name__)
 
+
 @customer_bp.route('/', methods=['GET'])
 def get_all_customers():
     connection = mydb()
@@ -14,6 +15,8 @@ def get_all_customers():
     cursor.execute("SELECT * FROM CUSTOMER")
     result = cursor.fetchall()
     return jsonify(result), 200
+
+
 @customer_bp.route('/<int:id>', methods=['GET'])
 def get_customer_by_id(id):
     connection = mydb()
@@ -29,7 +32,6 @@ def get_customer_by_id(id):
     return jsonify(customer), 200
 
 
-
 @customer_bp.route('/add', methods=['POST'])
 def add():
     data = request.json
@@ -38,7 +40,8 @@ def add():
     try:
         with connection.cursor() as cursor:
             sql = "INSERT INTO `customer` (`name_first_name`, `name_last_name`, `email`, `loyalty_points`, `phone_number`) VALUES (%s, %s, %s, %s, %s)"
-            cursor.execute(sql, (data['name_first_name'], data['name_last_name'], data['email'], data['loyalty_points'], data['phone_number']))
+            cursor.execute(sql, (data['name_first_name'], data['name_last_name'], data['email'], data['loyalty_points'],
+                                 data['phone_number']))
             customer_id = cursor.lastrowid
         connection.commit()
     except MySQL_Error as e:
@@ -49,6 +52,7 @@ def add():
         connection.close()
 
     return jsonify({'message': 'Customer added successfully!', 'customer_id': customer_id}), 201
+
 
 @customer_bp.route('/edit/<int:customer_id>', methods=['POST'])
 def edit(customer_id):
@@ -70,6 +74,7 @@ def edit(customer_id):
         connection.close()
 
     return jsonify({'message': 'Customer updated successfully!', 'success': True}), 200
+
 
 @customer_bp.route('/delete/<int:id>', methods=['DELETE'])
 def delete(id):

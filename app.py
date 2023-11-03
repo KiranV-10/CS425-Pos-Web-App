@@ -1,7 +1,7 @@
 import sys
 
 from flask import Flask
-from modules import customer
+from modules import customer, employee, discount, product, orders
 from flask_cors import CORS
 import logging
 
@@ -19,3 +19,7 @@ if __name__ == '__main__':
     app.run(debug=True)
 
 app.register_blueprint(customer.customer_bp, url_prefix="/customer")
+app.register_blueprint(employee.employee_bp, url_prefix="/employee")
+app.register_blueprint(product.product_bp, url_prefix="/product")
+app.register_blueprint(discount.discount_bp, url_prefix="/discount")
+app.register_blueprint(orders.orders_bp, url_prefix="/orders")
