@@ -17,9 +17,15 @@ To connect your own DB to this application, edit the details in db.py, providing
 
 To run the application: 
 
-pip install
+Clone the application.
 
-$ env FLASK_APP=app.py  flask run
+Create virtualenvironment: python3 -m venv env
+
+Activate virtualenvironment: source env/scripts/activate
+
+Install requirements: pip install -r requirements.txt
+
+Run the application: $ env FLASK_APP=app.py  flask run
 
 It runs on port 500 by default.
 
