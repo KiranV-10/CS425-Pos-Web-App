@@ -15,8 +15,11 @@ This application contains all the CRUD operations for all the tables listed. Not
 
 ### File Structure
 app.py - entry file to the application
+
 db.py  - database details, 
+
 helper.py - shared file containing helper functions for all the modules
+
 modules folder - Each dao can be found here, handling the CRUD operations for the corresponding object
 
 
@@ -24,15 +27,25 @@ modules folder - Each dao can be found here, handling the CRUD operations for th
 
 To run the application on your device, run the commands in your terminal in the following steps:
 
-1. Clone the application: git clone [https://github.com/MeganYTan/CS425-Pos-Web-App.git](https://github.com/MeganYTan/CS425-Pos-Web-App.git)
+1. Clone the application:
 
-2. Create virtualenvironment: python3 -m venv env
+   ```git clone [https://github.com/MeganYTan/CS425-Pos-Web-App.git](https://github.com/MeganYTan/CS425-Pos-Web-App.git)```
 
-3. Activate virtualenvironment: source env/scripts/activate
+3. Create virtualenvironment:
 
-4. Install requirements: pip install -r requirements.txt
+   ```python3 -m venv env```
 
-5. Run the application: $ env FLASK_APP=app.py  flask run
+5. Activate virtualenvironment:
+  
+   ```source env/scripts/activate```
+
+8. Install requirements:
+
+   ```pip install -r requirements.txt```
+
+10. Run the application:
+
+    ```env FLASK_APP=app.py  flask run```
 
 The application runs on port 500 by default. To test that your application is running, navigate to http://localhost:5000/. You should see "Hello from flask".
 
