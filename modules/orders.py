@@ -13,7 +13,30 @@ orders_bp = Blueprint('orders', __name__)
 def get_all_orders():
     connection = mydb()
     cursor = connection.cursor(dictionary=True)
-    sql = "SELECT * FROM ORDERS_WITH_INFO ORDER BY ORDER_ID"
+    sql = '''
+    WITH otp AS (
+SELECT order_id, SUM(total_price) AS total_price FROM
+(SELECT order_id, quantity*price as total_price FROM
+(SELECT * FROM ORDERS NATURAL JOIN ORDER_PRODUCT NATURAL JOIN PRODUCT) t1) t2 
+GROUP BY order_id
+ORDER BY order_id
+)
+SELECT * FROM otp NATURAL JOIN Payment natural join (
+SELECT 
+    o.*, 
+    GROUP_CONCAT(
+        CONCAT_WS(':', op.product_id, op.quantity) 
+        SEPARATOR ','
+    ) AS order_products
+FROM 
+    order_product op
+NATURAL JOIN
+	orders o
+GROUP BY 
+    o.order_id
+    ) t
+    ;
+    '''
     cursor.execute(sql)
     result = cursor.fetchall()
     result = get_serializable_data(result)

@@ -3,6 +3,8 @@ from mysql.connector import Error as MySQL_Error
 from db import mydb
 import logging
 
+from helper import get_serializable_data
+
 logger = logging.getLogger(__name__)
 customer_bp = Blueprint('customer', __name__)
 
@@ -13,6 +15,35 @@ def get_all_customers():
     connection = mydb()
     cursor = connection.cursor(dictionary=True)
     cursor.execute("SELECT * FROM CUSTOMER")
+    result = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return jsonify(result), 200
+
+
+# get rank of customer based on purchase amount
+@customer_bp.route('/rank', methods=['GET'])
+def get_all_customers_with_rank():
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute('''With customer_with_order as (
+	Select customer_id, sum(quantity*price) as product_price_total from ORDERS natural join order_product natural join product
+    GROUP BY customer_id
+)
+select *, rank() over (order by product_price_total desc) as customer_rank from customer_with_order natural join customer;''')
+    result = cursor.fetchall()
+    result = get_serializable_data(result)
+    cursor.close()
+    connection.close()
+    return jsonify(result), 200
+
+
+# get customers whole have an order
+@customer_bp.route('/with-orders', methods=['GET'])
+def get_all_customers_with_orders():
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM CUSTOMER WHERE customer_id in (Select distinct customer_id from ORDERS)")
     result = cursor.fetchall()
     cursor.close()
     connection.close()
@@ -69,7 +100,10 @@ def edit(customer_id):
     try:
         sql = ("UPDATE CUSTOMER SET name_first_name = %s, name_last_name=%s, email=%s, loyalty_points=%s, "
                "phone_number=%s WHERE customer_id=%s")
-        cursor.execute(sql, (data['name_first_name'], data['name_last_name'], data['email'], data['loyalty_points'], data['phone_number'], customer_id))
+        cursor.execute(sql, (
+            data['name_first_name'], data['name_last_name'], data['email'], data['loyalty_points'],
+            data['phone_number'],
+            customer_id))
         connection.commit()
     except MySQL_Error as e:
         connection.rollback()

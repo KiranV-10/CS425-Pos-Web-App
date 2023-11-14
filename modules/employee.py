@@ -122,5 +122,5 @@ def delete(id):
     finally:
         cursor.close()
         connection.close()
-    return jsonify({'message': 'Employee deleted successfully!'}), 200
+    return jsonify({'message': 'Employee deleted successfully!', 'success': True}), 200
 

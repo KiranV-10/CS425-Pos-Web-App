@@ -20,6 +20,56 @@ def get_all_products():
     return jsonify(result), 200
 
 
+# get all products with orders and discount
+@product_bp.route('/orders-and-discount', methods=['GET'])
+def get_all_products_with_orders_and_discount():
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute('''SELECT * FROM PRODUCT WHERE PRODUCT_ID in (
+SELECT DISTINCT p.product_id
+FROM Product p
+JOIN Order_Product op ON p.product_id = op.product_id
+UNION
+SELECT DISTINCT p.product_id
+FROM Product p
+JOIN Order_Product op ON p.product_id = op.product_id
+JOIN Orders o ON op.order_id = o.order_id
+WHERE o.discount_id IS NOT NULL)''')
+    result = cursor.fetchall()
+    result = get_serializable_data(result)
+    return jsonify(result), 200
+
+
+# get all products cheaper than average product
+@product_bp.route('/cheaper-than-average', methods=['GET'])
+def get_all_products_cheaper_than_average():
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM Product WHERE price < ALL (SELECT AVG(price) FROM Product GROUP BY category)")
+    result = cursor.fetchall()
+    result = get_serializable_data(result)
+    return jsonify(result), 200
+
+
+# get all product with sales
+@product_bp.route('/with-sales', methods=['GET'])
+def get_all_products_with_sales():
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute('''SELECT p.product_id, p.category, product_name, price, product_description, PRODUCT_TOTAL_SALES_AMOUNT FROM PRODUCT RIGHT JOIN (
+SELECT 
+	COALESCE(category, 'All') AS category,
+	product_id,
+	SUM(quantity*price) AS PRODUCT_TOTAL_SALES_AMOUNT 
+FROM ORDER_PRODUCT NATURAL JOIN PRODUCT 
+GROUP BY category, product_id 
+WITH ROLLUP
+)p on PRODUCT.product_id = p.product_id''')
+    result = cursor.fetchall()
+    result = get_serializable_data(result)
+    return jsonify(result), 200
+
+
 # get product by id. Parameters: id: id of the product to get
 @product_bp.route('/<int:id>', methods=['GET'])
 def get_product_by_id(id):
@@ -68,7 +118,8 @@ def edit(product_id):
     cursor = connection.cursor(prepared=True)
     try:
         sql = "UPDATE product SET category = %s, product_name=%s, price=%s, product_description=%s WHERE product_id=%s"
-        cursor.execute(sql, (data['category'], data['product_name'], data['price'], data['product_description'], product_id))
+        cursor.execute(sql,
+                       (data['category'], data['product_name'], data['price'], data['product_description'], product_id))
         connection.commit()
     except MySQL_Error as e:
         connection.rollback()
