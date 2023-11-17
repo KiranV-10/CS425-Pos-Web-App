@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from mysql.connector import Error as MySQL_Error
-from helper import get_serializable_data, get_serializable_item
-from db import mydb
+from .helper import get_serializable_data, get_serializable_item
+from config import mydb
 import logging
 
 logger = logging.getLogger(__name__)

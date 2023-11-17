@@ -16,11 +16,9 @@ This application contains all the CRUD operations for all the tables listed. Not
 ### File Structure
 app.py - entry file to the application
 
-db.py  - database details, 
+config.py  - database details and configuration 
 
-helper.py - shared file containing helper functions for all the modules
-
-modules folder - Each dao can be found here, handling the CRUD operations for the corresponding object
+views folder - Each dao can be found here, handling the CRUD operations for the corresponding object. helper.py is shared file containing helper functions for all the DAO.
 
 
 ## Running the application
@@ -50,7 +48,7 @@ To run the application on your device, run the commands in your terminal in the 
 The application runs on port 500 by default. To test that your application is running, navigate to http://localhost:5000/. You should see "Hello from flask".
 
 ### Setting up database for the application
-To connect your own DB to this application, edit the details in db.py, providing the host, user, password, and database names for the database you want to connect to. 
+To connect your own DB to this application, edit the details in config.py, providing the host, user, password, and database names for the database you want to connect to. 
 
 ## Application UI
 

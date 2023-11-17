@@ -1,8 +1,7 @@
 from flask import Blueprint, request, jsonify
 from mysql.connector import Error as MySQL_Error
-import decimal
-from helper import get_serializable_data, get_serializable_item
-from db import mydb
+from .helper import get_serializable_data, get_serializable_item
+from config import mydb
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,56 +14,6 @@ def get_all_products():
     connection = mydb()
     cursor = connection.cursor(dictionary=True)
     cursor.execute("SELECT * FROM PRODUCT")
-    result = cursor.fetchall()
-    result = get_serializable_data(result)
-    return jsonify(result), 200
-
-
-# get all products with orders and discount
-@product_bp.route('/orders-and-discount', methods=['GET'])
-def get_all_products_with_orders_and_discount():
-    connection = mydb()
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute('''SELECT * FROM PRODUCT WHERE PRODUCT_ID in (
-SELECT DISTINCT p.product_id
-FROM Product p
-JOIN Order_Product op ON p.product_id = op.product_id
-UNION
-SELECT DISTINCT p.product_id
-FROM Product p
-JOIN Order_Product op ON p.product_id = op.product_id
-JOIN Orders o ON op.order_id = o.order_id
-WHERE o.discount_id IS NOT NULL)''')
-    result = cursor.fetchall()
-    result = get_serializable_data(result)
-    return jsonify(result), 200
-
-
-# get all products cheaper than average product
-@product_bp.route('/cheaper-than-average', methods=['GET'])
-def get_all_products_cheaper_than_average():
-    connection = mydb()
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM Product WHERE price < ALL (SELECT AVG(price) FROM Product GROUP BY category)")
-    result = cursor.fetchall()
-    result = get_serializable_data(result)
-    return jsonify(result), 200
-
-
-# get all product with sales
-@product_bp.route('/with-sales', methods=['GET'])
-def get_all_products_with_sales():
-    connection = mydb()
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute('''SELECT p.product_id, p.category, product_name, price, product_description, PRODUCT_TOTAL_SALES_AMOUNT FROM PRODUCT RIGHT JOIN (
-SELECT 
-	COALESCE(category, 'All') AS category,
-	product_id,
-	SUM(quantity*price) AS PRODUCT_TOTAL_SALES_AMOUNT 
-FROM ORDER_PRODUCT NATURAL JOIN PRODUCT 
-GROUP BY category, product_id 
-WITH ROLLUP
-)p on PRODUCT.product_id = p.product_id''')
     result = cursor.fetchall()
     result = get_serializable_data(result)
     return jsonify(result), 200
@@ -149,3 +98,53 @@ def delete(id):
         cursor.close()
         connection.close()
     return jsonify({'message': 'product deleted successfully!', 'success': True}), 200
+
+
+# get all products with orders and discount
+@product_bp.route('/orders-and-discount', methods=['GET'])
+def get_all_products_with_orders_and_discount():
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute('''SELECT * FROM PRODUCT WHERE PRODUCT_ID in (
+    SELECT DISTINCT p.product_id
+    FROM Product p
+    JOIN Order_Product op ON p.product_id = op.product_id
+    UNION
+    SELECT DISTINCT p.product_id
+    FROM Product p
+    JOIN Order_Product op ON p.product_id = op.product_id
+    JOIN Orders o ON op.order_id = o.order_id
+    WHERE o.discount_id IS NOT NULL)''')
+    result = cursor.fetchall()
+    result = get_serializable_data(result)
+    return jsonify(result), 200
+
+
+# get all products cheaper than average product
+@product_bp.route('/cheaper-than-average', methods=['GET'])
+def get_all_products_cheaper_than_average():
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM Product WHERE price < ALL (SELECT AVG(price) FROM Product GROUP BY category)")
+    result = cursor.fetchall()
+    result = get_serializable_data(result)
+    return jsonify(result), 200
+
+
+# get all product with sales
+@product_bp.route('/with-sales', methods=['GET'])
+def get_all_products_with_sales():
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute('''SELECT p.product_id, p.category, product_name, price, product_description, PRODUCT_TOTAL_SALES_AMOUNT FROM PRODUCT RIGHT JOIN (
+    SELECT 
+        COALESCE(category, 'All') AS category,
+        product_id,
+        SUM(quantity*price) AS PRODUCT_TOTAL_SALES_AMOUNT 
+    FROM ORDER_PRODUCT NATURAL JOIN PRODUCT 
+    GROUP BY category, product_id 
+    WITH ROLLUP
+    )p on PRODUCT.product_id = p.product_id''')
+    result = cursor.fetchall()
+    result = get_serializable_data(result)
+    return jsonify(result), 200

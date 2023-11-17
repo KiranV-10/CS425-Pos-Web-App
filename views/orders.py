@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from mysql.connector import Error as MySQL_Error
-from helper import get_serializable_data, get_serializable_item
-from db import mydb
+from .helper import get_serializable_data, get_serializable_item
+from config import mydb
 import logging
 
 logger = logging.getLogger(__name__)
@@ -14,27 +14,27 @@ def get_all_orders():
     connection = mydb()
     cursor = connection.cursor(dictionary=True)
     sql = '''
-    WITH otp AS (
-SELECT order_id, SUM(total_price) AS total_price FROM
-(SELECT order_id, quantity*price as total_price FROM
-(SELECT * FROM ORDERS NATURAL JOIN ORDER_PRODUCT NATURAL JOIN PRODUCT) t1) t2 
-GROUP BY order_id
-ORDER BY order_id
-)
-SELECT * FROM otp NATURAL JOIN Payment natural join (
-SELECT 
-    o.*, 
-    GROUP_CONCAT(
-        CONCAT_WS(':', op.product_id, op.quantity) 
-        SEPARATOR ','
-    ) AS order_products
-FROM 
-    order_product op
-NATURAL JOIN
-	orders o
-GROUP BY 
-    o.order_id
-    ) t
+        WITH otp AS (
+    SELECT order_id, SUM(total_price) AS total_price FROM
+    (SELECT order_id, quantity*price as total_price FROM
+    (SELECT * FROM ORDERS NATURAL JOIN ORDER_PRODUCT NATURAL JOIN PRODUCT) t1) t2 
+    GROUP BY order_id
+    ORDER BY order_id
+    )
+    SELECT * FROM otp NATURAL JOIN Payment natural join (
+    SELECT 
+        o.*, 
+        GROUP_CONCAT(
+            CONCAT_WS(':', op.product_id, op.quantity) 
+            SEPARATOR ','
+        ) AS order_products
+    FROM 
+        order_product op
+    NATURAL JOIN
+        orders o
+    GROUP BY 
+        o.order_id
+        ) t
     ;
     '''
     cursor.execute(sql)

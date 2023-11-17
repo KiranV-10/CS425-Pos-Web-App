@@ -1,6 +1,5 @@
-import sys
 from flask import Flask
-from modules import customer, employee, discount, product, orders
+from views import customer, employee, discount, product, orders
 from flask_cors import CORS
 import logging
 

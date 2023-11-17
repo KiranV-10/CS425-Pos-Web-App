@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from mysql.connector import Error as MySQL_Error
 import hashlib
-from db import mydb
+from config import mydb
 import logging
 
 logger = logging.getLogger(__name__)
