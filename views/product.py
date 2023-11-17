@@ -3,6 +3,8 @@ from mysql.connector import Error as MySQL_Error
 from .helper import get_serializable_data, get_serializable_item
 from config import mydb
 import logging
+import datetime
+import re
 
 logger = logging.getLogger(__name__)
 product_bp = Blueprint('product', __name__)
@@ -16,6 +18,8 @@ def get_all_products():
     cursor.execute("SELECT * FROM PRODUCT")
     result = cursor.fetchall()
     result = get_serializable_data(result)
+    cursor.close()
+    connection.close()
     return jsonify(result), 200
 
 
@@ -75,6 +79,7 @@ def edit(product_id):
         logger.error(f"MySQL Error: {e}")
         return jsonify({'message': 'Error Updating product: ' + str(e), 'success': False}), 500
     finally:
+        cursor.close()
         connection.close()
 
     return jsonify({'message': 'product updated successfully!', 'success': True}), 200
@@ -117,6 +122,8 @@ def get_all_products_with_orders_and_discount():
     WHERE o.discount_id IS NOT NULL)''')
     result = cursor.fetchall()
     result = get_serializable_data(result)
+    cursor.close()
+    connection.close()
     return jsonify(result), 200
 
 
@@ -128,6 +135,8 @@ def get_all_products_cheaper_than_average():
     cursor.execute("SELECT * FROM Product WHERE price < ALL (SELECT AVG(price) FROM Product GROUP BY category)")
     result = cursor.fetchall()
     result = get_serializable_data(result)
+    cursor.close()
+    connection.close()
     return jsonify(result), 200
 
 
@@ -147,4 +156,95 @@ def get_all_products_with_sales():
     )p on PRODUCT.product_id = p.product_id''')
     result = cursor.fetchall()
     result = get_serializable_data(result)
+    cursor.close()
+    connection.close()
     return jsonify(result), 200
+
+
+# get all product that have not been purchased
+@product_bp.route('/with-no-orders', methods=['GET'])
+def get_all_products_with_no_orders():
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute('''Select * from PRODUCT WHERE product_id not in (Select distinct product_id from ORDER_PRODUCT)''')
+    result = cursor.fetchall()
+    result = get_serializable_data(result)
+    cursor.close()
+    connection.close()
+    return jsonify(result), 200
+
+
+# get sales by day and product and quantity
+@product_bp.route('/sales', methods=['GET'])
+def get_sales():
+    start_date = request.args.get('start_date')
+    end_date = request.args.get('end_date')
+    logger.error(start_date)
+    logger.error(end_date)
+    # Validate and process the date inputs
+
+    date_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+    if not (date_pattern.match(start_date) or date_pattern.match(end_date)):
+        return "Invalid date format. Please use YYYY-MM-DD.", 400
+
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute('''SELECT date_time,
+        COALESCE(category, 'ALL') AS product_category,
+        COALESCE(product_name, 'ALL') AS product_name, 
+        SUM(ORDER_PRODUCT.quantity) AS PRODUCT_TOTAL_QUANTITY
+        FROM ORDERS
+        JOIN ORDER_PRODUCT ON ORDERS.order_id = ORDER_PRODUCT.order_id
+        JOIN PRODUCT ON ORDER_PRODUCT.product_id = PRODUCT.product_id
+        WHERE date_time BETWEEN %s AND %s
+        GROUP BY date_time, category, product_name 
+        WITH ROLLUP''', (start_date, end_date))
+    result = cursor.fetchall()
+    result = get_serializable_data(result)
+    cursor.close()
+    connection.close()
+    return jsonify(result), 200
+
+
+# get cummulative total by date
+@product_bp.route('/cummulative-total', methods=['GET'])
+def get_cummulative_total_by_product():
+    try:
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        ids = request.args.get('ids')
+        ids_list = ids.split(',')
+        placeholders = ', '.join(['%s'] * len(ids_list))
+        date_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+        if not (date_pattern.match(start_date) or date_pattern.match(end_date)):
+            return "Invalid date format. Please use YYYY-MM-DD.", 400
+
+        connection = mydb()
+        cursor = connection.cursor(dictionary=True)
+        query = '''SELECT
+        date_time,
+        p.product_id,
+        p.product_name,
+        p.category,
+        op.quantity,
+        SUM(op.quantity) OVER (PARTITION BY p.product_id ORDER BY o.date_time) AS CumulativeQuantity
+        FROM
+            Orders o
+        JOIN
+            Order_Product op ON o.order_id = op.order_id
+        JOIN
+            Product p ON op.product_id = p.product_id
+        WHERE
+            o.date_time BETWEEN %s AND %s
+            AND p.product_id in ({})
+        ORDER BY
+        p.product_id, o.date_time;'''.format(placeholders)
+        cursor.execute(query, (start_date, end_date, *ids_list))
+        result = cursor.fetchall()
+        result = get_serializable_data(result)
+        cursor.close()
+        connection.close()
+        return jsonify(result), 200
+    except MySQL_Error as e:
+        logger.error(f"MySQL Error: {e}")
+        return jsonify({'message': 'Error: ' + str(e), 'success': False}), 500

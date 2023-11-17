@@ -5,27 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f4026ae-7d13-47d1-b634-bfc9b848ffbf" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/customer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/discount.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/employee.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/helper.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/orders.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/views/product.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/pos-system-backend.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/pos-system-backend.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/helper.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/customer.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/discount.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/employee.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/orders.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/product.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/product.py" beforeDir="false" afterPath="$PROJECT_DIR$/views/product.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
