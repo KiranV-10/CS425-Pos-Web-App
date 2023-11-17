@@ -35,6 +35,33 @@ def get_discount_by_id(id):
         connection.close()
     return jsonify(discount), 200
 
+#new query for olap
+@discount_bp.route('/sales-report', methods=['GET'])
+def get_discount_sales_report():
+    connection = mydb()
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT 
+                DISCOUNT.discount_description, 
+                COUNT(*) as number_of_orders, 
+                SUM(PRODUCT.price * ORDER_PRODUCT.quantity) as total_sales_without_discount, 
+                SUM((PRODUCT.price * ORDER_PRODUCT.quantity) * (1 - DISCOUNT.discount_amount/100)) as total_sales_with_discount
+            FROM ORDERS
+            JOIN ORDER_PRODUCT ON ORDERS.order_id = ORDER_PRODUCT.order_id
+            JOIN PRODUCT ON ORDER_PRODUCT.product_id = PRODUCT.product_id
+            LEFT JOIN DISCOUNT ON ORDERS.discount_id = DISCOUNT.discount_id
+            GROUP BY DISCOUNT.discount_description;
+        """)
+        result = cursor.fetchall()
+        result = get_serializable_data(result)
+        return jsonify(result), 200
+    except MySQL_Error as e:
+        logger.error(f"MySQL Error: {e}")
+        return jsonify({'message': 'Error retrieving sales report: ' + str(e), 'success': False}), 500
+    finally:
+        cursor.close()
+        connection.close()
 
 # add a discount to the database. Parameter in post body is the discount object
 @discount_bp.route('/add', methods=['POST'])
