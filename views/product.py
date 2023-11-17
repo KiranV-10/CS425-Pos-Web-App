@@ -145,15 +145,17 @@ def get_all_products_cheaper_than_average():
 def get_all_products_with_sales():
     connection = mydb()
     cursor = connection.cursor(dictionary=True)
-    cursor.execute('''SELECT p.product_id, p.category, product_name, price, product_description, PRODUCT_TOTAL_SALES_AMOUNT FROM PRODUCT RIGHT JOIN (
+    cursor.execute('''SELECT p.product_id, p.category, product_name, price, product_description, PRODUCT_TOTAL_QUANTITY, PRODUCT_TOTAL_SALES_AMOUNT 
+    FROM PRODUCT RIGHT JOIN (
     SELECT 
         COALESCE(category, 'All') AS category,
         product_id,
-        SUM(quantity*price) AS PRODUCT_TOTAL_SALES_AMOUNT 
+        SUM(quantity*price) AS PRODUCT_TOTAL_SALES_AMOUNT,
+        SUM(quantity) as PRODUCT_TOTAL_QUANTITY
     FROM ORDER_PRODUCT NATURAL JOIN PRODUCT 
     GROUP BY category, product_id 
     WITH ROLLUP
-    )p on PRODUCT.product_id = p.product_id''')
+    )p on PRODUCT.product_id = p.product_id;''')
     result = cursor.fetchall()
     result = get_serializable_data(result)
     cursor.close()
@@ -192,7 +194,8 @@ def get_sales():
     cursor.execute('''SELECT date_time,
         COALESCE(category, 'ALL') AS product_category,
         COALESCE(product_name, 'ALL') AS product_name, 
-        SUM(ORDER_PRODUCT.quantity) AS PRODUCT_TOTAL_QUANTITY
+        SUM(ORDER_PRODUCT.quantity) AS PRODUCT_TOTAL_QUANTITY,
+        SUM(ORDER_PRODUCT.quantity * price) as PRODUCT_TOTAL_PRICE
         FROM ORDERS
         JOIN ORDER_PRODUCT ON ORDERS.order_id = ORDER_PRODUCT.order_id
         JOIN PRODUCT ON ORDER_PRODUCT.product_id = PRODUCT.product_id
@@ -227,7 +230,8 @@ def get_cummulative_total_by_product():
         p.product_name,
         p.category,
         op.quantity,
-        SUM(op.quantity) OVER (PARTITION BY p.product_id ORDER BY o.date_time) AS CumulativeQuantity
+        SUM(op.quantity) OVER (PARTITION BY p.product_id ORDER BY o.date_time) AS CumulativeQuantity,
+        SUM(op.quantity * p.price) OVER (PARTITION BY p.product_id ORDER BY o.date_time) AS CumulativePrice
         FROM
             Orders o
         JOIN
