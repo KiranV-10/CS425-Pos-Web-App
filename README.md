@@ -29,19 +29,11 @@ To run the application on your device, run the commands in your terminal in the 
 
    ```git clone [https://github.com/MeganYTan/CS425-Pos-Web-App.git](https://github.com/MeganYTan/CS425-Pos-Web-App.git)```
 
-3. Create virtualenvironment:
-
-   ```python3 -m venv env```
-
-5. Activate virtualenvironment:
-  
-   ```source env/scripts/activate```
-
-8. Install requirements:
+2. Install requirements:
 
    ```pip install -r requirements.txt```
 
-10. Run the application:
+3. Run the application:
 
     ```env FLASK_APP=app.py  flask run```
 
